@@ -1,3 +1,4 @@
+import { AuthenticatedGuard } from './guard/authenticated.guard';
 import { GetUserId } from './decorators/get-user-id.decorator';
 import { GetUser } from './decorators/get-user.decorator';
 import { AccessTokenGuard } from './guard/access-token.guard';
@@ -14,18 +15,20 @@ import {
   Req,
   UnauthorizedException,
   UseGuards,
+  Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { Public } from './decorators/public.decorator';
-import { LoginResponse } from './dto/login.response';
 import { Request } from 'express';
 import {
   ForgotPasswordResponse,
   ResetPasswordResponse,
   VerifyEmailResponse,
 } from 'src/global/types';
+import { LocalAuthGuard } from './guard/local-auth.guard';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -37,11 +40,25 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  // @Public()
+  // @HttpCode(HttpStatus.OK)
+  // @Post('login')
+  // async login(@Body() loginDto: LoginDto): Promise<LoginResponse> {
+  //   return this.authService.login(loginDto);
+  // }
+
   @Public()
+  @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<LoginResponse> {
-    return this.authService.login(loginDto);
+  login(@Req() req: Request, @Body() loginDto: LoginDto): LoginResponseDto {
+    // @ts-ignore
+    return req.user;
+  }
+
+  @Get('protected')
+  async protected(@Req() req: Request) {
+    return req.user;
   }
 
   @HttpCode(HttpStatus.OK)
@@ -50,16 +67,16 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  @Public()
-  @UseGuards(RefreshTokenGuard)
-  @HttpCode(HttpStatus.OK)
-  @Post('refresh')
-  async refreshTokens(
-    @GetUserId() userId: number,
-    @GetUser('refresh_token') refresh_token: string,
-  ) {
-    return this.authService.refreshTokens(userId, refresh_token);
-  }
+  // @Public()
+  // @UseGuards(RefreshTokenGuard)
+  // @HttpCode(HttpStatus.OK)
+  // @Post('refresh')
+  // async refreshTokens(
+  //   @GetUserId() userId: number,
+  //   @GetUser('refresh_token') refresh_token: string,
+  // ) {
+  //   return this.authService.refreshTokens(userId, refresh_token);
+  // }
 
   @Public()
   @HttpCode(HttpStatus.OK)

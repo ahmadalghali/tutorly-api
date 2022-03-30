@@ -1,16 +1,24 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { StudentService } from './../student/student.service';
+import { CreateStudentDto } from './../student/dto/create-student.dto';
+import { CreateTutorDto } from './../tutor/dto/create-tutor.dto';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 // import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginResponseDto } from './dto/login-response.dto';
 import {
   ForgotPasswordResponse,
   ResetPasswordResponse,
 } from 'src/global/types';
+import { RegisterUserDto } from 'src/user/dto/register-user.dto';
+import { UserRole } from 'src/user/enum/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +36,7 @@ export class AuthService {
         throw new UnauthorizedException('Invalid Credentials');
       }
     } else {
-      throw new UnauthorizedException(`User with email ${email} found`);
+      throw new UnauthorizedException(`User with email ${email} not found`);
     }
   }
   verifyEmail():
@@ -71,21 +79,33 @@ export class AuthService {
   // }
 
   async logout(userId: number) {
-    await this.userService.update(userId, {
-      hashedRefreshToken: null,
-    });
+    // await this.userService.update(userId, {
+    //   hashedRefreshToken: null,
+    // });
     return { message: 'Logged out.' };
   }
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
+    private studentService: StudentService,
   ) {}
-  async register(registerDto: RegisterDto) {
-    const { email, password } = registerDto;
+  async register(createStudentDto: CreateStudentDto) {
+    const { email, password } = createStudentDto;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    await this.checkUserExists(email);
 
-    return this.userService.create({ email: email, password: hashedPassword });
+    createStudentDto.password = await this.hashPassword(password);
+
+    return this.studentService.register(createStudentDto);
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10);
+  }
+
+  async checkUserExists(email: string) {
+    const userExists = await this.userService.findByEmail(email);
+    if (userExists) throw new BadRequestException('Email already registered');
   }
 
   // async login(loginDto: LoginDto): Promise<LoginResponse> {
@@ -115,9 +135,9 @@ export class AuthService {
   // }
   async updateHashedRefreshToken(userId: number, refresh_token: string) {
     const hashedRefreshToken = await this.hashData(refresh_token);
-    this.userService.update(userId, {
-      hashedRefreshToken: hashedRefreshToken,
-    });
+    // this.userService.update(userId, {
+    //   hashedRefreshToken: hashedRefreshToken,
+    // });
   }
 
   hashData(data: any) {

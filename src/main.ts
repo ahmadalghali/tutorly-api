@@ -15,10 +15,9 @@ async function bootstrap() {
   // app.setGlobalPrefix('/api');
   app.useGlobalPipes(
     new ValidationPipe({
-      // transform: true,
+      transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
-      validateCustomDecorators: true,
       forbidUnknownValues: true,
     }),
   );
@@ -41,7 +40,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000', 'https://localhost:3000'],
     credentials: true,
   });
 
@@ -55,7 +54,7 @@ async function bootstrap() {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365, // 1 Year
         secure: process.env.NODE_ENV === 'prod',
-        sameSite: 'lax',
+        sameSite: 'strict',
         httpOnly: true,
       },
     }),

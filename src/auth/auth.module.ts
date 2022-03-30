@@ -1,3 +1,4 @@
+import { StudentModule } from './../student/student.module';
 import { SessionSerializer } from './session.serializer';
 import { LocalStrategy } from './strategy/local.strategy';
 import { RefreshTokenStrategy } from './strategy/refresh-token.strategy';
@@ -19,6 +20,7 @@ import { PassportModule } from '@nestjs/passport';
       isGlobal: true,
     }),
     JwtModule.register({}),
+    StudentModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -29,5 +31,6 @@ import { PassportModule } from '@nestjs/passport';
     LocalStrategy,
     SessionSerializer,
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

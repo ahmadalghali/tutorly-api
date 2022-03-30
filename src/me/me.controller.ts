@@ -21,8 +21,9 @@ export class MeController {
   constructor(private readonly meService: MeService) {}
 
   @Get()
-  getMe(@GetUser() user) {
-    return this.meService.getMe(user.id);
+  getMe(@Req() req) {
+    // getMe(@GetUser() user) {
+    return this.meService.getMe(req.user);
   }
 
   // @Patch()

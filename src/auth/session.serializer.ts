@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
 import { UserService } from 'src/user/user.service';
 
@@ -12,6 +12,7 @@ export class SessionSerializer extends PassportSerializer {
   }
   async deserializeUser(payload: any, done: Function) {
     const user = await this.userService.findOne(payload.id);
+    if (!user) return new UnauthorizedException('Invalid credentials');
     const { password, ...rest } = user;
     done(null, rest);
   }

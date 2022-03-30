@@ -1,3 +1,5 @@
+import { CreateStudentDto } from './../student/dto/create-student.dto';
+import { RegisterUserDto } from '../user/dto/register-user.dto';
 import { AuthenticatedGuard } from './guard/authenticated.guard';
 import { GetUserId } from './decorators/get-user-id.decorator';
 import { GetUser } from './decorators/get-user.decorator';
@@ -18,7 +20,6 @@ import {
   Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { Public } from './decorators/public.decorator';
 import { Request } from 'express';
@@ -36,8 +37,8 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(@Body() createStudentDto: CreateStudentDto) {
+    return this.authService.register(createStudentDto);
   }
 
   // @Public()
@@ -63,8 +64,9 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('logout')
-  async logout(@GetUserId() userId: number) {
-    return this.authService.logout(userId);
+  async logout(@Req() req) {
+    return req.logout();
+    // return this.authService.logout(userId);
   }
 
   // @Public()

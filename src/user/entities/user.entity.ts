@@ -1,48 +1,55 @@
 import { Exclude } from 'class-transformer';
-import { Allow, IsEmail } from 'class-validator';
-import { Chat } from 'src/chat/entities/chat.entity';
-import { BaseEntity } from 'src/global/base.entity';
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  TableInheritance,
-} from 'typeorm';
+import { Allow, IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { CrudBaseEntity } from 'src/global/base.entity';
+import { Column, Entity, TableInheritance } from 'typeorm';
 import { UserRole } from '../enum/user-role.enum';
 
 @Entity('user')
+// @TableInheritance()
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
-export class User extends BaseEntity {
+export class User extends CrudBaseEntity {
   @IsEmail()
+  @IsNotEmpty()
   @Column({ unique: true })
   email: string;
 
-  @Allow()
-  @Column()
+  @IsNotEmpty()
+  // @MinLength(6)
   @Exclude()
+  @Column()
   password: string;
 
+  @Allow()
   @Column()
   firstname: string;
 
+  @Allow()
   @Column()
   lastname: string;
 
-  enabled = false;
-  locked = false;
+  @Column({
+    default: false,
+  })
+  enabled: boolean;
 
-  profileImage: string;
+  @Column({
+    default: false,
+  })
+  locked: boolean;
+
+  @Allow()
+  @Column({ nullable: true })
+  profileImageUrl?: string;
+
+  @Allow()
+  @Column()
   phoneNumber: string;
 
+  @Allow()
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.GUEST,
+    default: UserRole.STUDENT,
   })
   role: UserRole;
 }
-
-// isParent: boolean;

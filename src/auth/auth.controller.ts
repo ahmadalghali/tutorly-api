@@ -36,6 +36,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('register')
   async register(@Body() createStudentDto: CreateStudentDto) {
     return this.authService.register(createStudentDto);

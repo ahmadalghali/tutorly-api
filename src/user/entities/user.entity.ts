@@ -15,7 +15,7 @@ export class User extends CrudBaseEntity {
 
   @IsNotEmpty()
   // @MinLength(6)
-  @Exclude()
+  @Exclude({ toPlainOnly: true }) // @Exclude() is used to exclude the field from the response
   @Column()
   password: string;
 

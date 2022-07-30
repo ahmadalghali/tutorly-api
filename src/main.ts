@@ -40,7 +40,11 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://localhost:3000'],
+    origin: [
+      'http://localhost:3000',
+      'https://localhost:3000',
+      'https://tutorly-app.netlify.app',
+    ],
     credentials: true,
   });
 

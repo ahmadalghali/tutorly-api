@@ -1,3 +1,6 @@
+import { StudentModule } from './../student/student.module';
+import { SessionSerializer } from './session.serializer';
+import { LocalStrategy } from './strategy/local.strategy';
 import { RefreshTokenStrategy } from './strategy/refresh-token.strategy';
 import { AccessTokenStrategy } from './strategy/access-token.strategy';
 import { UserModule } from 'src/user/user.module';
@@ -6,15 +9,18 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
 // import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
     UserModule,
+    PassportModule.register({ session: true }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     JwtModule.register({}),
+    StudentModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -22,6 +28,9 @@ import { ConfigModule } from '@nestjs/config';
     // JwtStrategy,
     AccessTokenStrategy,
     RefreshTokenStrategy,
+    LocalStrategy,
+    SessionSerializer,
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

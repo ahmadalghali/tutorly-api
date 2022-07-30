@@ -33,6 +33,9 @@ export class MessageService {
             id: In([me.id, userId]),
           },
         },
+        order: {
+          createdAt: 'ASC',
+        },
       },
     );
 

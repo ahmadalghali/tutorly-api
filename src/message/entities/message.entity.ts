@@ -10,11 +10,15 @@ export class Message extends CrudBaseEntity {
   @Column()
   text: string;
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: false, eager: true })
   sender: User;
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: false, eager: true })
   receiver: User;
+
+  @Allow()
+  @Column({ default: false })
+  seen: boolean;
 
   // @ManyToOne(() => Chat, (chat) => chat.messages, { nullable: false })
   // chat: Chat;

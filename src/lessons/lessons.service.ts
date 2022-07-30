@@ -28,7 +28,10 @@ export class LessonsService {
     } else if (user.role === UserRole.STUDENT) {
       return await this.lessonRepo
         .createQueryBuilder('lesson')
-        .leftJoinAndSelect('lesson.students', 'student')
+        .leftJoinAndSelect('lesson.tutor', 'tutor')
+        .leftJoinAndSelect('lesson.subject', 'subject')
+        .leftJoinAndSelect('lesson.level', 'level')
+        .innerJoin('lesson.students', 'student')
         .where('student.id = :studentId', { studentId: user.id })
         .getMany();
     }

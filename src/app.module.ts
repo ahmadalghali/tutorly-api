@@ -29,6 +29,7 @@ import { RolesGuard } from './auth/guard/role.guard';
 import { SubjectsModule } from './subjects/subjects.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { Lesson } from './lessons/entities/lesson.entity';
+import { HealthController } from './health/health.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -71,7 +72,7 @@ import { Lesson } from './lessons/entities/lesson.entity';
     SubjectsModule,
     LessonsModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,

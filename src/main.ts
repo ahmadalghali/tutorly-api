@@ -30,7 +30,22 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   const RedisStore = connectRedis(session);
-  const redisClient = createClient({ legacyMode: true });
+  let redisClient;
+
+  if (process.env.NODE_ENV === 'production') {
+    redisClient = createClient({
+      legacyMode: true,
+      url: process.env.REDIS_URL,
+      socket: {
+        tls: true,
+        rejectUnauthorized: false,
+      },
+    });
+  } else {
+    redisClient = createClient({
+      legacyMode: true,
+    });
+  }
 
   await redisClient
     .connect()
@@ -45,7 +60,6 @@ async function bootstrap() {
       'https://localhost:3000',
       'https://tutorly-app.netlify.app/',
       'https://tutorly-app.netlify.app',
-      'https://tutorly-api.herokuapp.com',
     ],
     credentials: true,
   });

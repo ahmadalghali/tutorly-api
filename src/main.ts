@@ -43,7 +43,9 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'https://localhost:3000',
+      'https://tutorly-app.netlify.app/',
       'https://tutorly-app.netlify.app',
+      'https://tutorly-api.herokuapp.com',
     ],
     credentials: true,
   });

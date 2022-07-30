@@ -1,6 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateUserDto } from './create-user.dto';
+import { PartialType } from '@nestjs/swagger';
+import { OmitType } from '@nestjs/swagger';
+import { RegisterUserDto } from './register-user.dto';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
-  hashedRefreshToken?: string;
-}
+export class UpdateUserDto extends PartialType(
+  OmitType(RegisterUserDto, ['email'] as const),
+) {}

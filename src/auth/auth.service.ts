@@ -1,19 +1,44 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { StudentService } from './../student/student.service';
+import { CreateStudentDto } from './../student/dto/create-student.dto';
+import { CreateTutorDto } from './../tutor/dto/create-tutor.dto';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 // import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
-import { LoginResponse } from './dto/login.response';
+import { LoginResponseDto } from './dto/login-response.dto';
 import {
   ForgotPasswordResponse,
   ResetPasswordResponse,
 } from 'src/global/types';
+import { RegisterUserDto } from 'src/user/dto/register-user.dto';
+import { UserRole } from 'src/user/enum/user-role.enum';
 
 @Injectable()
 export class AuthService {
+  async login(email: string, password: string) {
+    const user = await this.userService.findByEmail(email);
+
+    if (user) {
+      const hashedPassword = user.password;
+      const passwordMatches = await bcrypt.compare(password, hashedPassword);
+
+      if (passwordMatches) {
+        const { password, ...rest } = user;
+        return rest;
+      } else {
+        throw new UnauthorizedException('Invalid Credentials');
+      }
+    } else {
+      throw new UnauthorizedException(`User with email ${email} not found`);
+    }
+  }
   verifyEmail():
     | import('src/global/types').VerifyEmailResponse
     | PromiseLike<import('src/global/types').VerifyEmailResponse> {
@@ -28,79 +53,91 @@ export class AuthService {
   forgotPassword(email: string): Promise<ForgotPasswordResponse> {
     throw new Error('Method not implemented.');
   }
-  async refreshTokens(userId: number, refresh_token: string) {
-    const user = await this.userService.findOne(userId);
+  // async refreshTokens(userId: number, refresh_token: string) {
+  //   const user = await this.userService.findOne(userId);
 
-    if (user) {
-      if (user.hashedRefreshToken) {
-        const refreshTokenMatches = await bcrypt.compare(
-          refresh_token,
-          user.hashedRefreshToken,
-        );
-        if (refreshTokenMatches) {
-          const { access_token, refresh_token } = await this.generateJwtTokens(
-            user,
-          );
-          return { access_token, refresh_token };
-        } else {
-          throw new UnauthorizedException("Refresh token doesn't match");
-        }
-      } else {
-        throw new UnauthorizedException('No refresh token in database');
-      }
-    } else {
-      throw new UnauthorizedException('User doesnt exist');
-    }
-  }
+  //   if (user) {
+  //     if (user.hashedRefreshToken) {
+  //       const refreshTokenMatches = await bcrypt.compare(
+  //         refresh_token,
+  //         user.hashedRefreshToken,
+  //       );
+  //       if (refreshTokenMatches) {
+  //         const { access_token, refresh_token } = await this.generateJwtTokens(
+  //           user,
+  //         );
+  //         return { access_token, refresh_token };
+  //       } else {
+  //         throw new UnauthorizedException("Refresh token doesn't match");
+  //       }
+  //     } else {
+  //       throw new UnauthorizedException('No refresh token in database');
+  //     }
+  //   } else {
+  //     throw new UnauthorizedException('User doesnt exist');
+  //   }
+  // }
 
   async logout(userId: number) {
-    await this.userService.update(userId, {
-      hashedRefreshToken: null,
-    });
+    // await this.userService.update(userId, {
+    //   hashedRefreshToken: null,
+    // });
     return { message: 'Logged out.' };
   }
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
+    private studentService: StudentService,
   ) {}
-  async register(registerDto: RegisterDto) {
-    const { email, password } = registerDto;
+  async register(createStudentDto: CreateStudentDto) {
+    const { email, password } = createStudentDto;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    await this.checkUserExists(email);
 
-    return this.userService.create({ email: email, password: hashedPassword });
+    createStudentDto.password = await this.hashPassword(password);
+
+    return this.studentService.register(createStudentDto);
   }
 
-  async login(loginDto: LoginDto): Promise<LoginResponse> {
-    const { email, password } = loginDto;
-
-    const user = await this.userService.findByEmail(email);
-
-    if (user) {
-      const hashedPassword = user.password;
-      const passwordMatches = await bcrypt.compare(password, hashedPassword);
-
-      if (passwordMatches) {
-        const { access_token, refresh_token } = await this.generateJwtTokens(
-          user,
-        );
-        this.updateHashedRefreshToken(user.id, refresh_token);
-
-        return { access_token: access_token, refresh_token: refresh_token };
-      } else {
-        throw new UnauthorizedException('Invalid Credentials');
-      }
-    } else {
-      throw new UnauthorizedException('Invalid Credentials');
-    }
-
-    // return this.userService.findByEmail(ema)
+  async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10);
   }
+
+  async checkUserExists(email: string) {
+    const userExists = await this.userService.findByEmail(email);
+    if (userExists) throw new BadRequestException('Email already registered');
+  }
+
+  // async login(loginDto: LoginDto): Promise<LoginResponse> {
+  //   const { email, password } = loginDto;
+
+  //   const user = await this.userService.findByEmail(email);
+
+  //   if (user) {
+  //     const hashedPassword = user.password;
+  //     const passwordMatches = await bcrypt.compare(password, hashedPassword);
+
+  //     if (passwordMatches) {
+  //       const { access_token, refresh_token } = await this.generateJwtTokens(
+  //         user,
+  //       );
+  //       this.updateHashedRefreshToken(user.id, refresh_token);
+
+  //       return { access_token: access_token, refresh_token: refresh_token };
+  //     } else {
+  //       throw new UnauthorizedException('Invalid Credentials');
+  //     }
+  //   } else {
+  //     throw new UnauthorizedException('Invalid Credentials');
+  //   }
+
+  //   // return this.userService.findByEmail(ema)
+  // }
   async updateHashedRefreshToken(userId: number, refresh_token: string) {
     const hashedRefreshToken = await this.hashData(refresh_token);
-    this.userService.update(userId, {
-      hashedRefreshToken: hashedRefreshToken,
-    });
+    // this.userService.update(userId, {
+    //   hashedRefreshToken: hashedRefreshToken,
+    // });
   }
 
   hashData(data: any) {

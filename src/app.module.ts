@@ -38,7 +38,10 @@ import { Lesson } from './lessons/entities/lesson.entity';
       type: 'mysql',
       host: 'localhost',
       port: 3306,
-      url: process.env.DATABASE_URL,
+      url:
+        process.env.NODE_ENV === 'production'
+          ? process.env.JAWSDB_URL
+          : process.env.LOCAL_DATABASE_URL,
       // username: process.env.DB_USERNAME,
       // password: process.env.DB_PASSWORD,
       // database: process.env.DB_NAME,
